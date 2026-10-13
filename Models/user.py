@@ -11,6 +11,7 @@ from database import Base
 class UserRole(StrEnum):
     buyer = "buyer"
     seller = "seller"
+    manager = "manager"
     admin = "admin"
 
 
@@ -22,6 +23,8 @@ class User(Base):
     email = Column(String(150), unique=True, nullable=False)
     phone_number = Column(String(20), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
+    national_id = Column(String(32), nullable=True)
+    interest_notifications = Column(Boolean, nullable=False, default=False, server_default="0")
     role = Column(SAEnum(UserRole), nullable=False, default=UserRole.buyer)
     is_verified = Column(Boolean, nullable=False, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())

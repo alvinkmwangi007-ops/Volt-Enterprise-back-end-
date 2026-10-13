@@ -4,7 +4,7 @@ Database setup. init_db(app) must be called once from the app factory
 (app.py) before any request uses get_session().
 """
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -29,7 +29,46 @@ def init_db(app):
 
     import Models  # noqa: F401: register every ORM model with Base.metadata
 
+    _migrate_existing_columns(_engine)
     Base.metadata.create_all(bind=_engine)
+
+
+def _migrate_existing_columns(engine):
+    """Add marketplace columns without deleting existing user or car records."""
+    existing_tables = inspect(engine).get_table_names()
+    additions = {
+        "users": {
+            "national_id": "VARCHAR(32)",
+            "interest_notifications": "BOOLEAN NOT NULL DEFAULT 0",
+        },
+        "cars": {
+            "plate": "VARCHAR(16)",
+            "vehicle_type": "VARCHAR(60)",
+            "showroom": "VARCHAR(120)",
+            "online_sale": "BOOLEAN NOT NULL DEFAULT 0",
+            "finance_status": "VARCHAR(32)",
+            "imported_vehicle": "BOOLEAN",
+        },
+    }
+    with engine.begin() as connection:
+        if engine.dialect.name == "mysql" and "users" in existing_tables:
+            connection.execute(text(
+                "ALTER TABLE users MODIFY COLUMN role "
+                "ENUM('buyer', 'seller', 'manager', 'admin') NOT NULL"
+            ))
+        for table, columns in additions.items():
+            if table not in existing_tables:
+                continue
+            existing_columns = {
+                column["name"] for column in inspect(connection).get_columns(table)
+            }
+            for column, definition in columns.items():
+                if column not in existing_columns:
+                    quoted_table = connection.dialect.identifier_preparer.quote(table)
+                    quoted_column = connection.dialect.identifier_preparer.quote(column)
+                    connection.execute(text(
+                        f"ALTER TABLE {quoted_table} ADD COLUMN {quoted_column} {definition}"
+                    ))
 
 
 def get_session():

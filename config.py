@@ -10,6 +10,7 @@ Select which one loads via the FLASK_ENV environment variable.
 """
 
 import os
+import tempfile
 from datetime import timedelta
 
 
@@ -17,10 +18,26 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "change-this-in-production")
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-jwt-secret-in-production")
+    MAX_CONTENT_LENGTH = 20 * 1024 * 1024
+    PRIVATE_UPLOAD_FOLDER = os.getenv(
+        "PRIVATE_UPLOAD_FOLDER",
+        os.path.join(tempfile.gettempdir(), "volt-enterprise-private-uploads"),
+    )
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    OTP_TTL_SECONDS = int(os.getenv("OTP_TTL_SECONDS", "300"))
+    OTP_RESEND_SECONDS = int(os.getenv("OTP_RESEND_SECONDS", "60"))
+    OTP_MAX_ATTEMPTS = int(os.getenv("OTP_MAX_ATTEMPTS", "5"))
+    OTP_MAX_PER_HOUR = int(os.getenv("OTP_MAX_PER_HOUR", "5"))
+    TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+    TWILIO_FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER")
+    CORS_ORIGINS = os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
     INSPECTION_PARTNER_API_KEY = os.getenv(
         "INSPECTION_PARTNER_API_KEY",
         "change-this-partner-key",
@@ -29,6 +46,8 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    SECRET_KEY = Config.SECRET_KEY or "volt-local-development-secret-only-123"
+    JWT_SECRET_KEY = Config.JWT_SECRET_KEY or "volt-local-development-jwt-secret-123"
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DEV_DATABASE_URL",
         f"sqlite:///{os.path.join(basedir, 'app.db')}",
@@ -51,6 +70,8 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     DEBUG = True
+    SECRET_KEY = "volt-testing-secret-key-32-bytes-minimum"
+    JWT_SECRET_KEY = "volt-testing-jwt-key-32-bytes-minimum"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 
 

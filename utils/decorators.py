@@ -16,7 +16,9 @@ def role_required(*allowed_roles):
         def wrapper(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            if claims.get("role") not in allowed_roles:
+            role = claims.get("role")
+            effective_roles = {"manager", "admin"} if role == "admin" else {role}
+            if not effective_roles.intersection(allowed_roles):
                 return jsonify({
                     "error": "Insufficient permissions for this action",
                 }), 403

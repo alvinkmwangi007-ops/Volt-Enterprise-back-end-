@@ -16,7 +16,7 @@ DEFAULT_COMMISSION_RATE = 5.00
 
 
 @deal_bp.route("", methods=["POST"])
-@role_required("admin")
+@role_required("admin", "manager")
 def open_brokerage_deal():
     db = get_session()
     try:
@@ -58,7 +58,7 @@ def open_brokerage_deal():
 
 
 @deal_bp.route("/<int:deal_id>/status", methods=["PATCH"])
-@role_required("admin")
+@role_required("admin", "manager")
 def update_deal_status(deal_id):
     db = get_session()
     try:
@@ -110,7 +110,7 @@ def get_deal(deal_id):
 
 
 @deal_bp.route("", methods=["GET"])
-@role_required("admin")
+@role_required("admin", "manager")
 def list_deals():
     db = get_session()
     try:

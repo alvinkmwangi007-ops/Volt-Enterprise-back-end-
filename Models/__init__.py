@@ -3,6 +3,8 @@ from .car import Car, CarImage, FuelType, Transmission, CarStatus, VerificationS
 from .inspection import InspectionPartner, Inspection, InspectionStatus, InspectionResult
 from .inquiry import Inquiry, Message, InquiryStatus
 from .deal import BrokerageDeal, DealStatus
+from .otp_challenge import OtpChallenge
+from .secure_file import SecureFile
 
 __all__ = [
     "User", "UserRole",
@@ -10,4 +12,6 @@ __all__ = [
     "InspectionPartner", "Inspection", "InspectionStatus", "InspectionResult",
     "Inquiry", "Message", "InquiryStatus",
     "BrokerageDeal", "DealStatus",
+    "OtpChallenge",
+    "SecureFile",
 ]

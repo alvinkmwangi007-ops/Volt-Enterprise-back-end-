@@ -23,6 +23,12 @@ class CarSchema(Schema):
         ["petrol", "diesel", "hybrid", "electric"]
     ))
     transmission = fields.Str(required=True, validate=validate.OneOf(["manual", "automatic"]))
+    plate = fields.Str(required=False, allow_none=True, validate=validate.Length(max=16))
+    vehicle_type = fields.Str(required=False, allow_none=True, validate=validate.Length(max=60))
+    showroom = fields.Str(required=False, allow_none=True, validate=validate.Length(max=120))
+    online_sale = fields.Bool(load_default=False)
+    finance_status = fields.Str(required=False, allow_none=True, load_only=True)
+    imported_vehicle = fields.Bool(required=False, allow_none=True, load_only=True)
     condition_notes = fields.Str(required=False, allow_none=True)
     location = fields.Str(required=False, allow_none=True)
     status = fields.Str(dump_only=True)
@@ -30,6 +36,14 @@ class CarSchema(Schema):
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
     images = fields.List(fields.Nested(CarImageSchema), dump_only=True)
+    seller_name = fields.Method("get_seller_name", dump_only=True)
+    seller_phone = fields.Method("get_seller_phone", dump_only=True)
+
+    def get_seller_name(self, car):
+        return car.seller.full_name if car.seller else None
+
+    def get_seller_phone(self, car):
+        return car.seller.phone_number if car.seller else None
 
 
 car_schema = CarSchema()

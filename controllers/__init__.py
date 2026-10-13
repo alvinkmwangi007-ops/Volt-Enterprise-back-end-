@@ -4,5 +4,6 @@ from .car_controller import car_bp
 from .inspection_controller import inspection_bp
 from .inquiry_controller import inquiry_bp
 from .deal_controller import deal_bp
+from .file_controller import file_bp
 
-__all__ = ["auth_bp", "user_bp", "car_bp", "inspection_bp", "inquiry_bp", "deal_bp"]
+__all__ = ["auth_bp", "user_bp", "car_bp", "inspection_bp", "inquiry_bp", "deal_bp", "file_bp"]
