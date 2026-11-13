@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from marshmallow import ValidationError
+from sqlalchemy.orm import joinedload, selectinload
 
 from database import get_session
 from Models import Car, CarImage, CarStatus
@@ -18,7 +19,7 @@ def find_my_cars():
     try:
         requester_id = int(get_jwt_identity())
         requester_role = get_jwt().get("role")
-        query = db.query(Car)
+        query = db.query(Car).options(selectinload(Car.images), joinedload(Car.seller))
         if requester_role not in {"admin", "manager"}:
             query = query.filter(Car.seller_id == requester_id)
         return jsonify(cars_schema.dump(query.order_by(Car.id.desc()).all())), 200
@@ -53,7 +54,11 @@ def list_a_car():
 def find_a_car():
     db = get_session()
     try:
-        query = db.query(Car).filter(Car.status == "active")
+        query = (
+            db.query(Car)
+            .options(selectinload(Car.images), joinedload(Car.seller))
+            .filter(Car.status == "active")
+        )
 
         make = request.args.get("make")
         if make:

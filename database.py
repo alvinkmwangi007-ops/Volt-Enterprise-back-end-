@@ -63,6 +63,10 @@ def _migrate_existing_columns(engine):
         },
     }
     with engine.begin() as connection:
+        if "cars" in existing_tables:
+            existing_indexes = {index["name"] for index in inspect(connection).get_indexes("cars")}
+            if "ix_cars_status" not in existing_indexes:
+                connection.execute(text("CREATE INDEX ix_cars_status ON cars (status)"))
         if engine.dialect.name == "mysql" and "users" in existing_tables:
             connection.execute(text(
                 "ALTER TABLE users MODIFY COLUMN role "

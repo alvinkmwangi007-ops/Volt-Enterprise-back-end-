@@ -6,10 +6,12 @@ Run in development (SQLite, creates app.db automatically):
     python app.py
 """
 
+import logging
 import os
+import time
 
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, g, request
 from flask_jwt_extended import JWTManager
 
 load_dotenv()
@@ -42,8 +44,21 @@ def create_app(env=None):
     app.register_blueprint(deal_bp)
     app.register_blueprint(file_bp)
 
+    @app.before_request
+    def start_timer():
+        g.request_started = time.perf_counter()
+
     @app.after_request
     def add_cors_headers(response):
+        started = g.get("request_started")
+        if started is not None:
+            elapsed_ms = (time.perf_counter() - started) * 1000
+            response.headers["X-Response-Time"] = f"{elapsed_ms:.0f}ms"
+            if elapsed_ms > 500:
+                logging.getLogger("timing").warning(
+                    "SLOW %s %s -> %s in %.0fms",
+                    request.method, request.path, response.status_code, elapsed_ms,
+                )
         origin = request.headers.get("Origin")
         allowed_origins = {
             configured_origin.strip().rstrip("/")
@@ -54,6 +69,7 @@ def create_app(env=None):
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, DELETE, OPTIONS"
+            response.headers["Access-Control-Max-Age"] = "86400"
             response.headers["Vary"] = "Origin"
         if request.path.startswith("/api/admin/documents/"):
             response.headers["Cache-Control"] = "no-store, private"

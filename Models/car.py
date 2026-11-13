@@ -58,7 +58,7 @@ class Car(Base):
     imported_vehicle = Column(Boolean, nullable=True)
     condition_notes = Column(Text)
     location = Column(String(150))
-    status = Column(SAEnum(CarStatus), nullable=False, default=CarStatus.draft)
+    status = Column(SAEnum(CarStatus), nullable=False, default=CarStatus.draft, index=True)
     verification_status = Column(
         SAEnum(VerificationStatus), nullable=False, default=VerificationStatus.unverified
     )

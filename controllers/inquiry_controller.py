@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from marshmallow import ValidationError
+from sqlalchemy.orm import selectinload
 
 from database import get_session
 from Models import Car, Inquiry, Message
@@ -115,7 +116,7 @@ def list_inquiries_for_user(user_id):
         if str(user_id) != requester_id and requester_role != "admin":
             return jsonify({"error": "Insufficient permissions"}), 403
 
-        results = db.query(Inquiry).filter(
+        results = db.query(Inquiry).options(selectinload(Inquiry.messages)).filter(
             (Inquiry.buyer_id == user_id) | (Inquiry.seller_id == user_id)
         ).all()
         return jsonify(inquiries_schema.dump(results)), 200

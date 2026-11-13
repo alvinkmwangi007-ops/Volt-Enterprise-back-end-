@@ -1,6 +1,7 @@
 import logging
 import re
 import secrets
+import time
 
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
@@ -49,7 +50,25 @@ def _issue_tokens(user):
     return access_token, refresh_token
 
 
-_google_request = google_requests.Request()
+_google_transport = google_requests.Request()
+_CERT_CACHE_SECONDS = 3600
+_cert_cache = {}
+
+
+def _google_request(url, method="GET", body=None, headers=None, timeout=None, **kwargs):
+    """Google's public signing certificates rarely change, so cache them in memory
+    instead of downloading them on every Firebase login."""
+    if method == "GET" and body is None:
+        cached = _cert_cache.get(url)
+        if cached and time.monotonic() - cached[0] < _CERT_CACHE_SECONDS:
+            return cached[1]
+    response = _google_transport(
+        url, method=method, body=body, headers=headers,
+        **({"timeout": timeout} if timeout is not None else {}), **kwargs,
+    )
+    if method == "GET" and body is None and response.status == 200:
+        _cert_cache[url] = (time.monotonic(), response)
+    return response
 
 
 def _verify_firebase_token(id_token):
@@ -122,7 +141,7 @@ def firebase_register():
             full_name=full_name,
             email=email,
             phone_number=phone_number,
-            password_hash=generate_password_hash(secrets.token_urlsafe(32)),
+            password_hash="!" + secrets.token_hex(32),
             role=role,
             national_id=national_id,
             interest_notifications=(
@@ -172,9 +191,11 @@ def login():
     db = get_session()
     try:
         user = db.query(User).filter(User.email == email).first()
+        # Only staff use password login; skip the slow hash check for everyone else.
+        if not user or _role_value(user) not in {"admin", "manager"}:
+            return jsonify({"error": "Invalid email or password."}), 401
         if (
-            not user
-            or not user.is_verified
+            not user.is_verified
             or not check_password_hash(user.password_hash, password)
         ):
             return jsonify({"error": "Invalid email or password."}), 401
