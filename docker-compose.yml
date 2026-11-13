@@ -33,7 +33,7 @@ services:
       DB_NAME: ${DB_NAME:-volt_motors}
       DB_USER: ${DB_USER:-volt}
       DB_PASSWORD: ${DB_PASSWORD:?set in .env}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,https://vaultmotors.co.ke,https://www.vaultmotors.co.ke}
       INSPECTION_PARTNER_API_KEY: ${INSPECTION_PARTNER_API_KEY:?set in .env}
       PRIVATE_UPLOAD_FOLDER: /data/private-uploads
     ports:

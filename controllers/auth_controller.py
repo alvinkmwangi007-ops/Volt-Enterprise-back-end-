@@ -154,7 +154,7 @@ def firebase_login():
     try:
         user = db.query(User).filter(User.email == claims["email"].strip().lower()).first()
         if not user or not user.is_verified:
-            return jsonify({"error": "No Volt account exists for this login. Please sign up first."}), 404
+            return jsonify({"error": "No Vault Motors account exists for this login. Please sign up first."}), 404
         return _auth_response(user)
     finally:
         db.close()

@@ -66,7 +66,7 @@ def create_app(env=None):
 
     @app.route("/")
     def health_check():
-        return {"status": "Volt Motors API is running", "environment": env}
+        return {"status": "Vault Motors API is running", "environment": env}
 
     @app.errorhandler(404)
     def not_found(error):

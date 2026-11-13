@@ -30,7 +30,8 @@ class Config:
     FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "volt-motors-98ea6")
     CORS_ORIGINS = os.getenv(
         "CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173",
+        "http://localhost:5173,http://127.0.0.1:5173,"
+        "https://vaultmotors.co.ke,https://www.vaultmotors.co.ke",
     ).split(",")
     INSPECTION_PARTNER_API_KEY = os.getenv(
         "INSPECTION_PARTNER_API_KEY",
