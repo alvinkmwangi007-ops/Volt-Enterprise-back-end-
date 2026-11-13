@@ -76,50 +76,6 @@ def list_users():
         db.close()
 
 
-@user_bp.route("/managers", methods=["POST"])
-@role_required("admin")
-def create_manager():
-    body = request.get_json(silent=True) or {}
-    full_name = str(body.get("full_name") or "").strip()
-    email = str(body.get("email") or "").strip().lower()
-    phone_number = re.sub(r"[\s().-]", "", str(body.get("phone_number") or ""))
-    password = body.get("password")
-    if (
-        not full_name
-        or len(full_name) > 100
-        or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email)
-        or not re.fullmatch(r"\+[1-9]\d{7,14}", phone_number)
-        or not isinstance(password, str)
-        or len(password) < 12
-    ):
-        return jsonify({
-            "error": "Provide a name, valid email and phone, and password of at least 12 characters.",
-        }), 400
-    db = get_session()
-    try:
-        if db.query(User).filter(
-            (User.email == email) | (User.phone_number == phone_number)
-        ).first():
-            return jsonify({"error": "An account already uses that email or phone number."}), 409
-        manager = User(
-            full_name=full_name,
-            email=email,
-            phone_number=phone_number,
-            password_hash=generate_password_hash(password),
-            role="manager",
-            is_verified=True,
-        )
-        db.add(manager)
-        db.commit()
-        db.refresh(manager)
-        return jsonify(user_schema.dump(manager)), 201
-    except Exception:
-        db.rollback()
-        return jsonify({"error": "Manager account could not be created."}), 500
-    finally:
-        db.close()
-
-
 @user_bp.route("/<int:user_id>", methods=["GET"])
 @jwt_required()
 def get_user(user_id):

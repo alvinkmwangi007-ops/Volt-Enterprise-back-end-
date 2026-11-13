@@ -4,6 +4,8 @@ Database setup. init_db(app) must be called once from the app factory
 (app.py) before any request uses get_session().
 """
 
+import time
+
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -28,6 +30,15 @@ def init_db(app):
     )
 
     import Models  # noqa: F401: register every ORM model with Base.metadata
+
+    for attempt in range(30):
+        try:
+            with _engine.connect():
+                break
+        except Exception:
+            if attempt == 29:
+                raise
+            time.sleep(2)
 
     _migrate_existing_columns(_engine)
     Base.metadata.create_all(bind=_engine)

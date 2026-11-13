@@ -27,13 +27,7 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
-    OTP_TTL_SECONDS = int(os.getenv("OTP_TTL_SECONDS", "300"))
-    OTP_RESEND_SECONDS = int(os.getenv("OTP_RESEND_SECONDS", "60"))
-    OTP_MAX_ATTEMPTS = int(os.getenv("OTP_MAX_ATTEMPTS", "5"))
-    OTP_MAX_PER_HOUR = int(os.getenv("OTP_MAX_PER_HOUR", "5"))
-    TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-    TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-    TWILIO_FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER")
+    FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "volt-motors-98ea6")
     CORS_ORIGINS = os.getenv(
         "CORS_ORIGINS",
         "http://localhost:5173,http://127.0.0.1:5173",
