@@ -22,6 +22,7 @@ def init_db(app):
     _engine = create_engine(
         app.config["SQLALCHEMY_DATABASE_URI"],
         pool_pre_ping=True,
+        pool_recycle=280,
     )
     _SessionFactory = sessionmaker(
         autocommit=False,
